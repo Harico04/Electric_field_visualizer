@@ -1,0 +1,10 @@
+// Ignore all files in the .vscode directory
+*.vscode/
+
+// Ignore all files
+*
+
+// Except for the following extensions
+!*.py
+!*.md
+!*.gitignore
