@@ -13,6 +13,7 @@ class Vector:
 
     #************************************
     def norma(self):
+        suma = 0
         for i in self.componentes:
             suma+=i
         return suma**(1/2)

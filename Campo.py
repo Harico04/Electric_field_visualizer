@@ -22,20 +22,29 @@ class Campo:
         self.vector_j.fill(0)
 
         # Calcular los vectores en función de las coordenadas de la carga
-        for cargaActual in self.cargas:
-            self.vector_i += ((self.k * cargaActual.getMagnitudCarga()) / ((self.horizontal - cargaActual.getX())**2 + (self.vertical - cargaActual.getY())**2)**(3/2)) * (self.horizontal - cargaActual.getX())
-            self.vector_j += ((self.k * cargaActual.getMagnitudCarga()) / ((self.horizontal - cargaActual.getX())**2 + (self.vertical - cargaActual.getY())**2)**(3/2)) * (self.vertical-cargaActual.getY())
+        for q in self.cargas:
+            vector_magnitud = ((self.horizontal - q.X())**2 + (self.vertical - q.Y())**2)**(3/2)
+            if(vector_magnitud == 0).any() : vector_magnitud = 0.000001 #Evitar divisiones por cero.
+            
+            self.vector_i += self.k * q.Signo() * q.Magnitud() / vector_magnitud * (self.horizontal - q.X())
+            self.vector_j += self.k * q.Signo() * q.Magnitud() / vector_magnitud * (self.vertical - q.Y())
         
         # Normalizar los vectores
-        vector_magnitud = (self.vector_i**2 + self.vector_j**2)**(1/2)
+        vector_magnitud = np.sqrt(self.vector_i**2 + self.vector_j**2)
         self.vector_i = self.vector_i / vector_magnitud
         self.vector_j = self.vector_j / vector_magnitud
 
     #*************************************************************************
     def crearCarga(self,event,ax):#event hace que este metodo sea un escuchador
 
+        if event.button == 1:  # Botón izquierdo
+            tipo_carga = '+'
+        elif event.button == 3:  # Botón derecho
+            tipo_carga = '-'
+        else:
+            return  # Ignora otros botones como el botón central
         #Obtener coordenadas del click(por el momento todas las cargas son positivas)
-        cargaActual=Carga('+',event.xdata,event.ydata)
+        cargaActual=Carga(tipo_carga,event.xdata,event.ydata)
         self.cargas.append(cargaActual)
 
         #Actualizar los vectores al haber una carga nueva a considerar
@@ -46,8 +55,8 @@ class Campo:
         ax.quiver(self.horizontal, self.vertical, self.vector_i, self.vector_j, color='white')
 
         #Dibujar todas las cargas
-        for cargaIterada in self.cargas:
-            dibujoCarga=plt.Circle((cargaIterada.getX(),cargaIterada.getY()),0.2,color='red',fill=True)
+        for q in self.cargas:
+            dibujoCarga=plt.Circle((q.X(),q.Y()),0.2, color = 'red' if q.Signo() == 1 else 'blue',fill=True)
             ax.add_patch(dibujoCarga)
 
         ax.set_xlabel('x')
