@@ -10,7 +10,7 @@ from matplotlib.widgets import RadioButtons
 class Campo:
 
     k=9e9
-    
+    cargaSeleccionada=False #Para checar si se esta queriendo mover una carga, moverCarga() se llama antes que actualizarCampo()
     #*************************************************************************
     def __init__(self, ax, radio_ax):
 
@@ -78,8 +78,11 @@ class Campo:
         # No hacer nada si el click no esta en el área del campo eléctrico.
         if event.inaxes != self.ax: return
         
-        #Agrega una carga.
-        self.agregarCarga(event.xdata, event.ydata)
+        #Agrega una carga si no se tiene una seleccionada.
+        if(self.cargaSeleccionada):
+            self.cargaSeleccionada=False
+        else:
+            self.agregarCarga(event.xdata, event.ydata) 
 
         # Actualizar los vectores al haber una carga nueva a considerar
         self.actualizarVectores()
@@ -104,7 +107,7 @@ class Campo:
         #Checar si alguna carga se selecciono
         for q in self.cargas:
             if event.artist==q.Dibujo():
-
+                self.cargaSeleccionada=True
                 #Escuchador que cambia la posicion de la carga
                 def mover(event):
                     q.modificarPosicion(event.xdata,event.ydata)
