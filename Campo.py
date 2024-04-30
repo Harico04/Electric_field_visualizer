@@ -7,8 +7,8 @@ class Campo:
     k=9e9
     #*************************************************************************
     def __init__(self):
-        self.horizontal=np.linspace(-5,5,16)
-        self.vertical=np.linspace(-5,5,16)
+        self.horizontal=np.linspace(-5,5,11)
+        self.vertical=np.linspace(-5,5,11)
         (self.horizontal,self.vertical)=np.meshgrid(self.horizontal,self.vertical)
         self.cargas=[]
         self.vector_i = np.zeros_like(self.horizontal)
@@ -43,7 +43,8 @@ class Campo:
             tipo_carga = '-'
         else:
             return  # Ignora otros botones como el botón central
-        #Obtener coordenadas del click(por el momento todas las cargas son positivas)
+        
+        #Obtener coordenadas del click
         cargaActual=Carga(tipo_carga,event.xdata,event.ydata)
         self.cargas.append(cargaActual)
 
@@ -56,12 +57,36 @@ class Campo:
 
         #Dibujar todas las cargas
         for q in self.cargas:
-            dibujoCarga=plt.Circle((q.X(),q.Y()),0.2, color = 'red' if q.Signo() == 1 else 'blue',fill=True)
-            ax.add_patch(dibujoCarga)
+            ax.add_artist(q.Dibujo())
 
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         plt.draw()
+    #*************************************************************************
+    def moverCarga(self,event,fig):
+        #Checar si alguna carga se selecciono
+        for q in self.cargas:
+            if event.artist==q.Dibujo():
+
+                #Escuchador que cambia la posicion de la carga
+                def mover(event):
+                    q.Dibujo().center=(event.xdata,event.ydata)
+                    self.actualizarVectores()
+                    fig.canvas.draw_idle()
+
+                #Conectar el evento de movimiento al plot
+                id_movimiento=fig.canvas.mpl_connect('motion_notify_event',mover)
+
+                # Desconectar el evento de movimiento después de soltar el botón del ratón
+                def soltar(event):
+                    fig.canvas.mpl_disconnect(id_movimiento)
+                
+                #Conectar el evento de desconexion al plot
+                fig.canvas.mpl_connect('button_release_event', soltar)
+                
+                #romper el ciclo
+                break
+
 
 
 

@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 
 class Carga:
     
@@ -9,6 +10,7 @@ class Carga:
            self.tipo=-1
         else:
             self.tipo=1
+        self.dibujo=plt.Circle((self.x,self.y),0.2,color = 'red' if self.tipo == 1 else 'blue',fill=True,picker=True)
     
     def Magnitud(self):
         return self.carga
@@ -22,3 +24,5 @@ class Carga:
     def Signo(self):
         return self.tipo
     
+    def Dibujo(self):
+        return self.dibujo

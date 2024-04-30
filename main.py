@@ -10,5 +10,6 @@ fig.set_facecolor('black')
 
 #Activar el escuchador al hacer click
 fig.canvas.mpl_connect('button_press_event', lambda event: campoVectorial.crearCarga(event,ax))
+fig.canvas.mpl_connect('pick_event', lambda event: campoVectorial.moverCarga(event,fig))
 
 plt.show()
