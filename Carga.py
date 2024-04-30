@@ -2,16 +2,10 @@
 class Carga:
     
     def __init__(self,signo,x,y) -> None:
-        self.carga=1.609e-19
+        self.valorCarga=1.609e-19 * signo
         self.x=x
         self.y=y
-        if(signo=='-'):
-           self.tipo=-1
-        else:
-            self.tipo=1
-    
-    def Magnitud(self):
-        return self.carga
+        self.signo = signo
     
     def X(self):
         return self.x
@@ -20,5 +14,8 @@ class Carga:
         return self.y
     
     def Signo(self):
-        return self.tipo
+        return self.signo
+
+    def valor(self):
+        return self.valorCarga
     
