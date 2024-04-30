@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from Carga import Carga
+from matplotlib.widgets import RadioButtons
 
 
 # Esta clase se encarga de hacer los cálculos del campo eléctrico, así como
@@ -11,7 +12,7 @@ class Campo:
     k=9e9
     
     #*************************************************************************
-    def __init__(self, ax):
+    def __init__(self, ax, radio_ax):
 
         # Como se dibujará el campo eléctrico.  
         self.horizontal=np.linspace(-5,5,16)
@@ -30,6 +31,14 @@ class Campo:
 
         # Conectar el escuchador de eventos de clic del ratón
         self.ax.figure.canvas.mpl_connect('button_press_event', self.actualizarCampo)
+
+        # Configuración de los Radio Buttons
+        self.radio_ax = radio_ax
+        self.radio_button = RadioButtons(self.radio_ax, ('+', '-'))
+        self.carga_signo = 1  # Signo inicial de la carga
+
+        # Actualizar el signo de la carga cuando se selecciona un radio button
+        self.radio_button.on_clicked(self.cambiar_signo)
 
 
 
@@ -58,7 +67,7 @@ class Campo:
     #*************************************************************************
     # Agrega una carga al conjunto de cargas del campo.
     def agregarCarga(self, x, y):
-        cargaActual=Carga(1, x, y)
+        cargaActual=Carga(self.carga_signo, x, y)
         self.cargas.append(cargaActual)
         
         
@@ -67,6 +76,9 @@ class Campo:
     # Se llama a llamar sola ya que es un escuchador.
     def actualizarCampo(self, event): 
 
+        # No hacer nada si el click no esta en el área del campo eléctrico.
+        if event.inaxes != self.ax: return
+        
         #Agrega una carga.
         self.agregarCarga(event.xdata, event.ydata)
 
@@ -86,6 +98,11 @@ class Campo:
             dibujoCarga = plt.Circle((q.X(), q.Y()), 0.2, color='red' if q.Signo() == 1 else 'blue', fill=True)
             self.ax.add_patch(dibujoCarga)
             plt.draw()
+
+    #*************************************************************************        
+    # Cambia el signo dependiendo de la opción seleccionada en el radiobutton.
+    def cambiar_signo(self, label):
+        self.carga_signo = 1 if label == '+' else -1
 
         
 
