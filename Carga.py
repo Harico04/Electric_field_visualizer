@@ -7,11 +7,16 @@ class Carga:
         self.x=x
         self.y=y
         self.signo = signo
-        self.dibujo=plt.Circle((self.x,self.y),0.2,color = 'red' if self.tipo == 1 else 'blue',fill=True,picker=True)
+        self.dibujo=plt.Circle((self.x,self.y),0.2,color = 'red' if self.signo == 1 else 'blue',fill=True,picker=True)
     
     def Magnitud(self):
         return self.carga
     
+    def modificarPosicion(self,x,y):
+        self.x=x
+        self.y=y
+        self.dibujo.center=(x,y)
+
     def X(self):
         return self.x
     

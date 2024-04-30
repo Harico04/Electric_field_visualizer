@@ -11,12 +11,7 @@ class Campo:
     k=9e9
     
     #*************************************************************************
-    def __init__(self, ax):
-
-        # Como se dibujará el campo eléctrico.  
-        self.horizontal=np.linspace(-5,5,16)
-        self.vertical=np.linspace(-5,5,16)
-    def __init__(self):
+    def __init__(self,ax):
         self.horizontal=np.linspace(-5,5,11)
         self.vertical=np.linspace(-5,5,11)
         (self.horizontal,self.vertical)=np.meshgrid(self.horizontal,self.vertical)
@@ -33,6 +28,7 @@ class Campo:
 
         # Conectar el escuchador de eventos de clic del ratón
         self.ax.figure.canvas.mpl_connect('button_press_event', self.actualizarCampo)
+        self.ax.figure.canvas.mpl_connect('pick_event', self.moverCarga)
 
 
 
@@ -62,20 +58,7 @@ class Campo:
     # Agrega una carga al conjunto de cargas del campo.
     def agregarCarga(self, x, y):
         cargaActual=Carga(1, x, y)
-    def crearCarga(self,event,ax):#event hace que este metodo sea un escuchador
-
-        if event.button == 1:  # Botón izquierdo
-            tipo_carga = '+'
-        elif event.button == 3:  # Botón derecho
-            tipo_carga = '-'
-        else:
-            return  # Ignora otros botones como el botón central
-        
-        #Obtener coordenadas del click
-        cargaActual=Carga(tipo_carga,event.xdata,event.ydata)
-        self.cargas.append(cargaActual)
-        
-        
+        self.cargas.append(cargaActual)   
     #*************************************************************************
     # Se encarga de actualizar el campo.
     # Se llama a llamar sola ya que es un escuchador.
@@ -103,28 +86,29 @@ class Campo:
         self.ax.set_ylabel('y')
         plt.draw()
     #*************************************************************************
-    def moverCarga(self,event,fig):
+    def moverCarga(self,event):
         #Checar si alguna carga se selecciono
         for q in self.cargas:
             if event.artist==q.Dibujo():
 
                 #Escuchador que cambia la posicion de la carga
                 def mover(event):
-                    q.Dibujo().center=(event.xdata,event.ydata)
+                    q.modificarPosicion(event.xdata,event.ydata)
                     self.actualizarVectores()
-                    fig.canvas.draw_idle()
+                    self.redibujar()
+                    self.ax.figure.canvas.draw_idle()
 
                 #Conectar el evento de movimiento al plot
-                id_movimiento=fig.canvas.mpl_connect('motion_notify_event',mover)
+                id_movimiento=self.ax.figure.canvas.mpl_connect('motion_notify_event',mover)
 
                 # Desconectar el evento de movimiento después de soltar el botón del ratón
                 def soltar(event):
-                    fig.canvas.mpl_disconnect(id_movimiento)
-                
+                    self.ax.figure.canvas.mpl_disconnect(id_movimiento)
+
                 #Conectar el evento de desconexion al plot
-                fig.canvas.mpl_connect('button_release_event', soltar)
+                self.ax.figure.canvas.mpl_connect('button_release_event', soltar)
                 
-                #romper el ciclo
+                #rompe el ciclo
                 break
 
 
