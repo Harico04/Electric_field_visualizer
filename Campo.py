@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from Carga import Carga
 from matplotlib.widgets import RadioButtons
-
+from Sensor import Sensor
 
 # Esta clase se encarga de hacer los cálculos del campo eléctrico, así como
 # el dibujar las cargas del campo eléctrico.
@@ -11,6 +11,7 @@ class Campo:
 
     k=9e9
     cargaSeleccionada=False #Para checar si se esta queriendo mover una carga, moverCarga() se llama antes que actualizarCampo()
+    sensorSeleccionado=False #Para checar si se tiene seleccionada la opcion de sensor en el RadioButton
     #*************************************************************************
     def __init__(self, ax, radio_ax):
 
@@ -32,16 +33,17 @@ class Campo:
         # Conectar el escuchador de eventos de clic del ratón
         self.ax.figure.canvas.mpl_connect('button_press_event', self.actualizarCampo)
         self.ax.figure.canvas.mpl_connect('pick_event', self.moverCarga)
+        self.ax.figure.canvas.mpl_connect('pick_event', self.movimientoSensor)
+        #Guarda una referencia al dibujo del sensor
+        self.sensor=Sensor(0,0,0,0)
 
         # Configuración de los Radio Buttons
         self.radio_ax = radio_ax
-        self.radio_button = RadioButtons(self.radio_ax, ('+', '-'))
+        self.radio_button = RadioButtons(self.radio_ax, ('+', '-','Sensor'))
         self.carga_signo = 1  # Signo inicial de la carga
 
         # Actualizar el signo de la carga cuando se selecciona un radio button
-        self.radio_button.on_clicked(self.cambiar_signo)
-
-
+        self.radio_button.on_clicked(self.seleccionarDibujado)
 
     # ***********************************************************************
     # Se encarga de actualizar el conjunto de vectores unitarios en función
@@ -78,6 +80,9 @@ class Campo:
         # No hacer nada si el click no esta en el área del campo eléctrico.
         if event.inaxes != self.ax: return
         
+        #checa que no se este intentado colocar un sensor
+        if self.sensorSeleccionado: return
+
         #Agrega una carga si no se tiene una seleccionada.
         if(self.cargaSeleccionada):
             self.cargaSeleccionada=False
@@ -99,6 +104,10 @@ class Campo:
         for q in self.cargas:
             self.ax.add_artist(q.Dibujo())
 
+        if self.sensorSeleccionado:
+            self.ax.add_artist(self.sensor.Dibujo())
+            self.ax.quiver(self.sensor.X(),self.sensor.Y(),self.sensor.componenteI(),self.sensor.componenteJ(),color='red')
+
         self.ax.set_xlabel('x')
         self.ax.set_ylabel('y')
         plt.draw()
@@ -115,7 +124,6 @@ class Campo:
                         self.cargas.remove(q)
                     self.actualizarVectores()
                     self.redibujar()
-                    self.ax.figure.canvas.draw_idle()
 
                 #Conectar el evento de movimiento al plot
                 id_movimiento=self.ax.figure.canvas.mpl_connect('motion_notify_event',mover)
@@ -129,15 +137,54 @@ class Campo:
                 
                 #rompe el ciclo
                 break
+    
+    #*************************************************************************   
+    def movimientoSensor(self,event):
+        if event.artist!=self.sensor.Dibujo(): return
+        def moverSensor(event):
+            self.sensor.modificarPosicion(event.xdata,event.ydata)
 
+            if self.sensor.X()==None or self.sensor.Y()==None:
+                self.sensor.modificarPosicion(0,0)
+                self.sensor.modificarVector(0,0)
+                return
+            
+            campoEnX=0
+            campoEnY=0
+            for q in self.cargas:
+                vector_magnitud=((self.sensor.X() - q.X())**2 + (self.sensor.Y() - q.Y())**2)**(3/2)
+                campoEnX+=self.k * q.valor() / vector_magnitud * (self.sensor.X() - q.X())
+                campoEnY+=self.k * q.valor() / vector_magnitud * (self.sensor.Y() - q.Y())
 
+            self.sensor.modificarVector(campoEnX,campoEnY)
+            print('<'+str(self.sensor.componenteI())+', '+str(self.sensor.componenteJ())+'>')
+            self.redibujar()
 
+        id_movimiento=self.ax.figure.canvas.mpl_connect('motion_notify_event', moverSensor)
+
+        def soltarSensor(event):
+            self.ax.figure.canvas.mpl_disconnect(id_movimiento)
+
+        self.ax.figure.canvas.mpl_connect('button_release_event', soltarSensor)
 
     #*************************************************************************        
-    # Cambia el signo dependiendo de la opción seleccionada en el radiobutton.
-    def cambiar_signo(self, label):
-        self.carga_signo = 1 if label == '+' else -1
+    # Cambia el dibujo realizado dependiendo de la opción seleccionada en el radiobutton.
+    def seleccionarDibujado(self, label):
+       if label=='+':
+           self.carga_signo=1
+           self.sensorSeleccionado=False
+           self.redibujar()
 
+       if label=='-':
+           self.carga_signo=-1
+           self.sensorSeleccionado=False
+           self.redibujar()
+
+       if label=='Sensor': 
+           self.sensorSeleccionado=True
+           self.redibujar()
+           
+    
         
 
     
