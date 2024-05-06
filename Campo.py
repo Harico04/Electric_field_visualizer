@@ -15,8 +15,8 @@ class Campo:
     def __init__(self, ax, radio_ax):
 
         # Como se dibujará el campo eléctrico.  
-        self.horizontal=np.linspace(-5,5,16)
-        self.vertical=np.linspace(-5,5,16)
+        self.horizontal=np.linspace(-5,5,11)
+        self.vertical=np.linspace(-5,5,11)
         (self.horizontal,self.vertical)=np.meshgrid(self.horizontal,self.vertical)
 
         # El conjunto de cargas que tendrá este campo eléctrico.
@@ -111,6 +111,12 @@ class Campo:
                 #Escuchador que cambia la posicion de la carga
                 def mover(event):
                     q.modificarPosicion(event.xdata,event.ydata)
+                    if q.X()==None or q.Y()==None:
+                        self.cargas.remove(q)
+                        self.actualizarVectores()
+                        self.redibujar()
+                        self.ax.figure.canvas.draw_idle()
+                        return
                     self.actualizarVectores()
                     self.redibujar()
                     self.ax.figure.canvas.draw_idle()
