@@ -1,21 +1,14 @@
-import matplotlib.pyplot as plt
 
 class Carga:
     
-    def __init__(self,signo,x,y) -> None:
-        self.valorCarga=1.609e-19 * signo
-        self.x=x
-        self.y=y
+    def __init__(self, x, y, signo = 1):
+        self.x = x
+        self.y = y
         self.signo = signo
-        self.dibujo=plt.Circle((self.x,self.y),0.2,color = 'red' if self.signo == 1 else 'blue',fill=True,picker=True)
-    
-    def Magnitud(self):
-        return self.carga
-    
-    def modificarPosicion(self,x,y):
-        self.x=x
-        self.y=y
-        self.dibujo.center=(x,y)
+        self.valorCarga=1e-9 * signo
+
+    def Valor(self):
+        return self.valorCarga
 
     def X(self):
         return self.x
@@ -25,9 +18,3 @@ class Carga:
     
     def Signo(self):
         return self.signo
-
-    def valor(self):
-        return self.valorCarga
-    
-    def Dibujo(self):
-        return self.dibujo
